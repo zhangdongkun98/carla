@@ -66,8 +66,10 @@ function download_content {
   #   wget -c ${CONTENT_LINK} -O Content.tar.gz
   # fi
   cp ~/save/Content.tar.gz .
+  mkdir -p Content
   tar -xvzf Content.tar.gz -C Content
   # rm Content.tar.gz
+  mkdir -p "$CONTENT_FOLDER"
   mv Content/* "$CONTENT_FOLDER"
   rm -rf Content
   echo "$CONTENT_ID" > "$VERSION_FILE"

@@ -113,12 +113,12 @@ def main():
             # If there is packages, import them first and package them
             docker_utils.exec_command(
                 carla_container,
-                'make import',
+                'make import ARGS="--package=map_package"',
                 user='ue4', verbose=args.verbose, ignore_error=False)
 
             docker_utils.exec_command(
                 carla_container,
-                'make package ARGS="--packages=' + str(args.packages) + '"',
+                'make package ARGS="--package=map_package"',
                 user='ue4', verbose=args.verbose, ignore_error=False)
         else:
             # Just create a package of the whole project
