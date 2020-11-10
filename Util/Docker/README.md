@@ -77,7 +77,7 @@ docker build \
     --network host \
     -t carla:0.9.9.4 -f Carla.Dockerfile .
 docker build --network host -t carla:0.9.9.4 -f Carla.Dockerfile .
-docker run -it --network host carla:0.9.9.4 /bin/bash
+docker run -it --network host -m 12g carla:0.9.9.4 /bin/bash
 ```
 
 ---
