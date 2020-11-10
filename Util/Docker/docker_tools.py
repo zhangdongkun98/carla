@@ -84,7 +84,7 @@ def main():
 
     args = parse_args()
     carla_image_name = "carla:0.9.9.4"
-    inbox_assets_path = '/home/ue4/carla-0.9.9.4/Import'
+    inbox_assets_path = '/home/ue4/v0.9.9.4/carla/Import'
     client = docker.from_env()
 
     # All possible Docker arguments are here:
@@ -130,7 +130,7 @@ def main():
         # Get the files routes to export
         files_to_copy = docker_utils.get_file_paths(
             carla_container,
-            '/home/ue4/carla-0.9.9.4/Dist/*.tar.gz',
+            '/home/ue4/v0.9.9.4/carla/Dist/*.tar.gz',
             user='ue4', verbose=args.verbose)
 
         # Copy these fles to the output folder
