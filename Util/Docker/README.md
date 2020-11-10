@@ -59,7 +59,7 @@ ue4-docker build 4.24.3 --no-engine --no-minimal
 Next, this will build the image with all the necessary requisites to build Carla in a **Ubuntu 18.04**
 
 ```
-docker build -t carla-prerequisites -f Prerequisites.Dockerfile .
+docker build -t carla-prerequisites:0.9.9.4 -f Prerequisites.Dockerfile .
 ```
 
 Finally create the actual Carla image, it will search for `carla-prerequisites:latest`:

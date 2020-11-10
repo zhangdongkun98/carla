@@ -1,4 +1,4 @@
-FROM carla-prerequisites:latest
+FROM carla-prerequisites:0.9.9.4
 
 ARG GIT_BRANCH
 
