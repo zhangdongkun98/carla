@@ -1,6 +1,6 @@
 cd /home/ue4/v0.9.9.4/
 rm -r carla
-git clone -v v0.9.9.4 https://github.com/zhangdongkun98/carla.git
+git clone -b v0.9.9.4 https://github.com/zhangdongkun98/carla.git
 cd /home/ue4/v0.9.9.4/carla
 ./Update.sh
 make CarlaUE4Editor
