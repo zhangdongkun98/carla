@@ -6,7 +6,6 @@
 
 #include "Carla.h"
 #include "TrafficSignBase.h"
-#include "SignComponent.h"
 
 ATrafficSignBase::ATrafficSignBase(const FObjectInitializer &ObjectInitializer)
   : Super(ObjectInitializer) {
@@ -15,21 +14,4 @@ ATrafficSignBase::ATrafficSignBase(const FObjectInitializer &ObjectInitializer)
   RootComponent =
       ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("SceneRootComponent"));
   RootComponent->SetMobility(EComponentMobility::Static);
-}
-
-TArray<UBoxComponent*> ATrafficSignBase::GetTriggerVolumes() const
-{
-  TArray<USignComponent*> Components;
-  GetComponents<USignComponent>(Components, false);
-  if (Components.Num())
-  {
-    USignComponent* SignComponent = Components.Top();
-    return SignComponent->GetEffectTriggerVolume();
-  }
-  else
-  {
-    TArray<UBoxComponent*> TriggerVolumes;
-    TriggerVolumes.Add(GetTriggerVolume());
-    return TriggerVolumes;
-  }
 }

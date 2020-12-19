@@ -61,26 +61,21 @@ namespace traffic_manager {
       ++state_counter;
     }
 
-    void Remove(std::vector<ActorId> actor_id_list) {
+    void Remove(std::vector<ActorPtr> actor_list) {
 
       std::lock_guard<std::mutex> lock(modification_mutex);
-      for (auto& actor_id: actor_id_list) {
-        if (actor_set.find(actor_id) != actor_set.end()){
-          actor_set.erase(actor_id);
-        }
+      for (auto& actor: actor_list) {
+        actor_set.erase(actor->GetId());
       }
       ++state_counter;
     }
 
-    void Destroy(ActorId actor_id) {
+    void Destroy(ActorPtr actor) {
 
       std::lock_guard<std::mutex> lock(modification_mutex);
-      if (actor_set.find(actor_id) != actor_set.end()) {
-        ActorPtr actor = actor_set.at(actor_id);
-        actor->Destroy();
-        actor_set.erase(actor_id);
-        ++state_counter;
-      }
+      actor_set.erase(actor->GetId());
+      actor->Destroy();
+      ++state_counter;
     }
 
     int GetState() {
@@ -99,12 +94,6 @@ namespace traffic_manager {
 
       std::lock_guard<std::mutex> lock(modification_mutex);
       return actor_set.size();
-    }
-
-    void Clear() {
-
-      std::lock_guard<std::mutex> lock(modification_mutex);
-      return actor_set.clear();
     }
 
   };

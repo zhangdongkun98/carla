@@ -325,7 +325,7 @@ def run_benchmark(world, sensors, n_vehicles, n_walkers, client, debug=False):
     sensor_list = sensors_ret
 
   ticks = 0
-  while ticks < int(args.ticks):
+  while ticks < args.ticks:
     _ = world.wait_for_tick()
     if debug:
       print("== Samples {} / {}".format(ticks + 1, args.ticks))

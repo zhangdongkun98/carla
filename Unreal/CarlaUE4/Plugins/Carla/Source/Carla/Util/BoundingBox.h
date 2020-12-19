@@ -20,8 +20,4 @@ struct CARLA_API FBoundingBox
   /// Radii extent of the bounding box.
   UPROPERTY(EditAnywhere, BlueprintReadWrite)
   FVector Extent = {0.0f, 0.0f, 0.0f};
-
-  /// Rotation of the bounding box.
-  UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  FRotator Rotation = {0.0f, 0.0f, 0.0f};
 };

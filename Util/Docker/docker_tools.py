@@ -99,7 +99,7 @@ def main():
 
     if args.packages:
         container_args["volumes"] = {
-            args.input: {'bind': inbox_assets_path, 'mode': 'rw'}}
+            args.input: {'bind': inbox_assets_path, 'mode': 'ro'}}
 
     print(bold("- ") + bold_underline("Docker arguments:"))
     print_formated_dict(container_args)
@@ -113,12 +113,12 @@ def main():
             # If there is packages, import them first and package them
             docker_utils.exec_command(
                 carla_container,
-                'make import ARGS="--package=map_package"',
+                'make import',
                 user='ue4', verbose=args.verbose, ignore_error=False)
 
             docker_utils.exec_command(
                 carla_container,
-                'make package ARGS="--package=map_package"',
+                'make package ARGS="--packages=' + str(args.packages) + '"',
                 user='ue4', verbose=args.verbose, ignore_error=False)
         else:
             # Just create a package of the whole project

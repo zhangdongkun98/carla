@@ -87,11 +87,7 @@ namespace client {
       remaining_length = current_s;
     }
     remaining_length -= std::numeric_limits<double>::epsilon();
-    if(result.size()) {
-      result.emplace_back(result.back()->GetNext(remaining_length).front());
-    } else {
-      result.emplace_back(GetNext(remaining_length).front());
-    }
+    result.emplace_back(result.back()->GetNext(remaining_length).front());
 
     return result;
   }
@@ -118,11 +114,7 @@ namespace client {
       remaining_length = current_s;
     }
     remaining_length -= std::numeric_limits<double>::epsilon();
-    if(result.size()) {
-      result.emplace_back(result.back()->GetPrevious(remaining_length).front());
-    } else {
-      result.emplace_back(GetPrevious(remaining_length).front());
-    }
+    result.emplace_back(result.back()->GetPrevious(remaining_length).front());
 
     return result;
   }
@@ -153,7 +145,7 @@ namespace client {
   }
 
   boost::optional<road::element::LaneMarking> Waypoint::GetLeftLaneMarking() const {
-    if (_mark_record.second != nullptr) {
+    if (_mark_record.first != nullptr) {
       return road::element::LaneMarking(*_mark_record.second);
     }
     return boost::optional<road::element::LaneMarking>{};
@@ -215,7 +207,7 @@ namespace client {
     return (c_right & lane_change_type::Right) | (c_left & lane_change_type::Left);
   }
 
-  std::vector<SharedPtr<Landmark>> Waypoint::GetAllLandmarksInDistance(
+  std::vector<SharedPtr<Landmark>> Waypoint::GetAllLandmakrsInDistance(
       double distance, bool stop_at_junction) const {
     std::vector<SharedPtr<Landmark>> result;
     auto signals = _parent->GetMap().GetSignalsInDistance(
@@ -228,12 +220,12 @@ namespace client {
       added_signals.insert(signal_data.signal);
       auto waypoint = SharedPtr<Waypoint>(new Waypoint(_parent, signal_data.waypoint));
       result.emplace_back(
-          new Landmark(waypoint, _parent, signal_data.signal, signal_data.accumulated_s));
+          new Landmark(waypoint, signal_data.signal, signal_data.accumulated_s));
     }
     return result;
   }
 
-  std::vector<SharedPtr<Landmark>> Waypoint::GetLandmarksOfTypeInDistance(
+  std::vector<SharedPtr<Landmark>> Waypoint::GetLandmakrsOfTypeInDistance(
         double distance, std::string filter_type, bool stop_at_junction) const {
     std::vector<SharedPtr<Landmark>> result;
     std::unordered_set<const road::element::RoadInfoSignal*> added_signals; // check for repeated signals
@@ -246,7 +238,7 @@ namespace client {
         }
         auto waypoint = SharedPtr<Waypoint>(new Waypoint(_parent, signal_data.waypoint));
         result.emplace_back(
-            new Landmark(waypoint, _parent, signal_data.signal, signal_data.accumulated_s));
+            new Landmark(waypoint, signal_data.signal, signal_data.accumulated_s));
       }
     }
     return result;

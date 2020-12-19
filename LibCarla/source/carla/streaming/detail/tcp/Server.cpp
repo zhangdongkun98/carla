@@ -6,8 +6,6 @@
 
 #include "carla/streaming/detail/tcp/Server.h"
 
-#include <boost/asio/post.hpp>
-
 #include "carla/Logging.h"
 
 #include <memory>
@@ -40,7 +38,7 @@ namespace tcp {
 
     _acceptor.async_accept(session->_socket, [=](error_code ec) {
       // Handle query and open a new session immediately.
-      boost::asio::post(_io_context, [=]() { handle_query(ec); });
+      _io_context.post([=]() { handle_query(ec); });
       OpenSession(timeout, on_opened, on_closed);
     });
   }

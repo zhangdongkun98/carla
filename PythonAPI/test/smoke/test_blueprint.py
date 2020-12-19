@@ -11,7 +11,6 @@ from . import SmokeTest
 
 class TestBlueprintLibrary(SmokeTest):
     def test_blueprint_ids(self):
-        print("TestBlueprintLibrary.test_blueprint_ids")
         library = self.client.get_world().get_blueprint_library()
         self.assertTrue([x for x in library])
         self.assertTrue([x for x in library.filter('sensor.*')])

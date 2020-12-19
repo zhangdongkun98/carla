@@ -118,8 +118,8 @@ def main():
     finally:
 
         print('destroying actors')
-        camera.destroy()
-        client.apply_batch([carla.command.DestroyActor(x) for x in actor_list])
+        for actor in actor_list:
+            actor.destroy()
         print('done.')
 
 

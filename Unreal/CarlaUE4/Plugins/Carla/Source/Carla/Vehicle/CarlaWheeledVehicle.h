@@ -110,10 +110,10 @@ public:
   }
 
   UFUNCTION(Category = "CARLA Wheeled Vehicle", BlueprintCallable)
-  FVehiclePhysicsControl GetVehiclePhysicsControl() const;
+  FVehiclePhysicsControl GetVehiclePhysicsControl();
 
   UFUNCTION(Category = "CARLA Wheeled Vehicle", BlueprintCallable)
-  FVehicleLightState GetVehicleLightState() const;
+  FVehicleLightState GetVehicleLightState();
 
   void ApplyVehiclePhysicsControl(const FVehiclePhysicsControl &PhysicsControl);
 
@@ -195,9 +195,6 @@ protected:
 
   UFUNCTION(BlueprintImplementableEvent)
   void RefreshLightState(const FVehicleLightState &VehicleLightState);
-
-  UFUNCTION(BlueprintCallable, CallInEditor)
-  void AdjustVehicleBounds();
 
 private:
 

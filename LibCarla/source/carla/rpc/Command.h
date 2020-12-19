@@ -12,19 +12,11 @@
 #include "carla/rpc/ActorDescription.h"
 #include "carla/rpc/ActorId.h"
 #include "carla/rpc/VehicleControl.h"
-#include "carla/rpc/VehicleLightState.h"
 #include "carla/rpc/WalkerControl.h"
 
 #include <boost/variant.hpp>
 
 namespace carla {
-
-namespace traffic_manager {
-  class TrafficManager;
-}
-
-namespace ctm = carla::traffic_manager;
-
 namespace rpc {
 
   class Command {
@@ -132,16 +124,6 @@ namespace rpc {
       MSGPACK_DEFINE_ARRAY(actor, impulse);
     };
 
-    struct ApplyAngularImpulse : CommandBase<ApplyAngularImpulse> {
-      ApplyAngularImpulse() = default;
-      ApplyAngularImpulse(ActorId id, const geom::Vector3D &value)
-        : actor(id),
-          impulse(value) {}
-      ActorId actor;
-      geom::Vector3D impulse;
-      MSGPACK_DEFINE_ARRAY(actor, impulse);
-    };
-
     struct SetSimulatePhysics : CommandBase<SetSimulatePhysics> {
       SetSimulatePhysics() = default;
       SetSimulatePhysics(ActorId id, bool value)
@@ -154,29 +136,12 @@ namespace rpc {
 
     struct SetAutopilot : CommandBase<SetAutopilot> {
       SetAutopilot() = default;
-      SetAutopilot(
-          ActorId id,
-          bool value,
-          uint16_t tm_port)
+      SetAutopilot(ActorId id, bool value)
         : actor(id),
-          enabled(value),
-          tm_port(tm_port) {}
+          enabled(value) {}
       ActorId actor;
       bool enabled;
-      uint16_t tm_port;
       MSGPACK_DEFINE_ARRAY(actor, enabled);
-    };
-
-    struct SetVehicleLightState : CommandBase<SetVehicleLightState> {
-      SetVehicleLightState() = default;
-      SetVehicleLightState(
-          ActorId id,
-          VehicleLightState::flag_type value)
-        : actor(id),
-          light_state(value) {}
-      ActorId actor;
-      VehicleLightState::flag_type light_state;
-      MSGPACK_DEFINE_ARRAY(actor, light_state);
     };
 
     using CommandType = boost::variant<
@@ -189,10 +154,8 @@ namespace rpc {
         ApplyVelocity,
         ApplyAngularVelocity,
         ApplyImpulse,
-        ApplyAngularImpulse,
         SetSimulatePhysics,
-        SetAutopilot,
-        SetVehicleLightState>;
+        SetAutopilot>;
 
     CommandType command;
 

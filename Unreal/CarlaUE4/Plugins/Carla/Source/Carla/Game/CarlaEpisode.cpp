@@ -16,7 +16,6 @@
 #include "Carla/Util/BoundingBoxCalculator.h"
 #include "Carla/Util/RandomEngine.h"
 #include "Carla/Vehicle/VehicleSpawnPoint.h"
-#include "Carla/Game/CarlaStatics.h"
 
 #include "Engine/StaticMeshActor.h"
 #include "EngineUtils.h"
@@ -129,9 +128,7 @@ static FString BuildRecastBuilderFile()
   return AbsoluteRecastBuilderPath;
 }
 
-bool UCarlaEpisode::LoadNewOpendriveEpisode(
-    const FString &OpenDriveString,
-    const carla::rpc::OpendriveGenerationParameters &Params)
+bool UCarlaEpisode::LoadNewOpendriveEpisode(const FString &OpenDriveString)
 {
   if (OpenDriveString.IsEmpty())
   {
@@ -141,7 +138,7 @@ bool UCarlaEpisode::LoadNewOpendriveEpisode(
 
   // Build the Map from the OpenDRIVE data
   const auto CarlaMap = carla::opendrive::OpenDriveParser::Load(
-      carla::rpc::FromLongFString(OpenDriveString));
+      carla::rpc::FromFString(OpenDriveString));
 
   // Check the Map is correclty generated
   if (!CarlaMap.has_value())
@@ -151,16 +148,14 @@ bool UCarlaEpisode::LoadNewOpendriveEpisode(
   }
 
   // Generate the OBJ (as string)
-  const auto RoadMesh = CarlaMap->GenerateMesh(Params.vertex_distance);
-  const auto CrosswalksMesh = CarlaMap->GetAllCrosswalkMesh();
-  const auto RecastOBJ = (RoadMesh + CrosswalksMesh).GenerateOBJForRecast();
+  const auto RecastOBJ = CarlaMap->GenerateGeometry(2).GenerateOBJForRecast();
 
   const FString AbsoluteOBJPath = FPaths::ConvertRelativePathToFull(
       FPaths::ProjectContentDir() + "Carla/Maps/Nav/OpenDriveMap.obj");
 
   // Store the OBJ string to a file in order to that RecastBuilder can load it
   FFileHelper::SaveStringToFile(
-      carla::rpc::ToLongFString(RecastOBJ),
+      carla::rpc::ToFString(RecastOBJ),
       *AbsoluteOBJPath,
       FFileHelper::EEncodingOptions::ForceUTF8,
       &IFileManager::Get());
@@ -181,20 +176,9 @@ bool UCarlaEpisode::LoadNewOpendriveEpisode(
     return false;
   }
 
-  UCarlaGameInstance * GameInstance = UCarlaStatics::GetGameInstance(GetWorld());
-  if(GameInstance)
-  {
-    GameInstance->SetOpendriveGenerationParameters(Params);
-  }
-  else
-  {
-    carla::log_warning("Missing game instance");
-  }
-
   const FString AbsoluteRecastBuilderPath = BuildRecastBuilderFile();
 
-  if (FPaths::FileExists(AbsoluteRecastBuilderPath) &&
-      Params.enable_pedestrian_navigation)
+  if (FPaths::FileExists(AbsoluteRecastBuilderPath))
   {
     /// @todo this can take too long to finish, clients need a method
     /// to know if the navigation is available or not.
@@ -299,18 +283,6 @@ void UCarlaEpisode::InitializeAtBeginPlay()
     ActorDispatcher->RegisterActor(*Actor, Description);
   }
 
-  // get the definition id for static.prop.mesh
-  auto Definitions = GetActorDefinitions();
-  uint32 StaticMeshUId = 0;
-  for (auto& Definition : Definitions)
-  {
-    if (Definition.Id == "static.prop.mesh")
-    {
-      StaticMeshUId = Definition.UId;
-      break;
-    }
-  }
-
   for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
   {
     auto Actor = *It;
@@ -320,16 +292,8 @@ void UCarlaEpisode::InitializeAtBeginPlay()
     if (MeshComponent->Mobility == EComponentMobility::Movable)
     {
       FActorDescription Description;
-      Description.Id = TEXT("static.prop.mesh");
-      Description.UId = StaticMeshUId;
+      Description.Id = TEXT("static.prop");
       Description.Class = Actor->GetClass();
-      Description.Variations.Add("mesh_path",
-          FActorAttribute{"mesh_path", EActorAttributeType::String,
-          MeshComponent->GetStaticMesh()->GetPathName()});
-      Description.Variations.Add("mass",
-          FActorAttribute{"mass", EActorAttributeType::Float,
-          FString::SanitizeFloat(MeshComponent->GetMass())});
-      carla::log_warning(carla::rpc::FromFString(MeshComponent->GetStaticMesh()->GetPathName()));
       ActorDispatcher->RegisterActor(*Actor, Description);
     }
   }
@@ -348,13 +312,13 @@ void UCarlaEpisode::EndPlay(void)
   }
 }
 
-std::string UCarlaEpisode::StartRecorder(std::string Name, bool AdditionalData)
+std::string UCarlaEpisode::StartRecorder(std::string Name)
 {
   std::string result;
 
   if (Recorder)
   {
-    result = Recorder->Start(Name, MapName, AdditionalData);
+    result = Recorder->Start(Name, MapName);
   }
   else
   {

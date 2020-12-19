@@ -75,11 +75,11 @@ rem -- Upload ------------------------------------------------------------------
 rem ==============================================================================
 
 set DEPLOY_URI=!S3_PREFIX!/%DEPLOY_NAME%
-%AWS_COPY% %LATEST_PACKAGE_PATH% %DEPLOY_URI%
+REM %AWS_COPY% %LATEST_PACKAGE_PATH% %DEPLOY_URI%
 echo Latest build uploaded to %DEPLOY_URI%
 
 if %REPLACE_LATEST%==true (
-  %AWS_COPY% %DEPLOY_URI% %LATEST_DEPLOY_URI%
+  REM %AWS_COPY% %DEPLOY_URI% %LATEST_DEPLOY_URI%
   echo Latest build uploaded to %LATEST_DEPLOY_URI%
 )
 

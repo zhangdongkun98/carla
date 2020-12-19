@@ -24,7 +24,8 @@ ASemanticSegmentationCamera::ASemanticSegmentationCamera(
       TEXT("Material'/Carla/PostProcessingMaterials/GTMaterial.GTMaterial'"));
 }
 
-void ASemanticSegmentationCamera::SendPixels()
+void ASemanticSegmentationCamera::Tick(float DeltaTime)
 {
+  Super::Tick(DeltaTime);
   FPixelReader::SendPixelsInRenderThread(*this);
 }

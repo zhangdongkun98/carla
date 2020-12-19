@@ -22,7 +22,8 @@ ASceneCaptureCamera::ASceneCaptureCamera(const FObjectInitializer &ObjectInitial
       TEXT("Material'/Carla/PostProcessingMaterials/PhysicLensDistortion.PhysicLensDistortion'"));
 }
 
-void ASceneCaptureCamera::SendPixels()
+void ASceneCaptureCamera::Tick(float DeltaTime)
 {
+  Super::Tick(DeltaTime);
   FPixelReader::SendPixelsInRenderThread(*this);
 }

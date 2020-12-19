@@ -145,9 +145,9 @@ namespace detail {
     _pimpl->CallAndWait<void>("load_new_episode", std::move(map_name));
   }
 
-  void Client::CopyOpenDriveToServer(std::string opendrive, const rpc::OpendriveGenerationParameters & params) {
+  void Client::CopyOpenDriveToServer(std::string opendrive) {
     // Await response, we need to be sure in this one.
-    _pimpl->CallAndWait<void>("copy_opendrive_to_file", std::move(opendrive), params);
+    _pimpl->CallAndWait<void>("copy_opendrive_to_file", std::move(opendrive));
   }
 
   rpc::EpisodeInfo Client::GetEpisodeInfo() {
@@ -197,25 +197,25 @@ namespace detail {
   }
 
   rpc::VehiclePhysicsControl Client::GetVehiclePhysicsControl(
-      rpc::ActorId vehicle) const {
+      const rpc::ActorId &vehicle) const {
     return _pimpl->CallAndWait<carla::rpc::VehiclePhysicsControl>("get_physics_control", vehicle);
   }
 
   rpc::VehicleLightState Client::GetVehicleLightState(
-      rpc::ActorId vehicle) const {
+      const rpc::ActorId &vehicle) const {
     return _pimpl->CallAndWait<carla::rpc::VehicleLightState>("get_vehicle_light_state", vehicle);
   }
 
   void Client::ApplyPhysicsControlToVehicle(
-      rpc::ActorId vehicle,
+      const rpc::ActorId &vehicle,
       const rpc::VehiclePhysicsControl &physics_control) {
     return _pimpl->AsyncCall("apply_physics_control", vehicle, physics_control);
   }
 
   void Client::SetLightStateToVehicle(
-      rpc::ActorId vehicle,
+      const rpc::ActorId &vehicle,
       const rpc::VehicleLightState &light_state) {
-    return _pimpl->AsyncCall("set_vehicle_light_state", vehicle, light_state);
+    return _pimpl->AsyncCall("apply_vehicle_light_state", vehicle, light_state);
   }
 
   rpc::Actor Client::SpawnActor(
@@ -229,17 +229,6 @@ namespace detail {
       const geom::Transform &transform,
       rpc::ActorId parent,
       rpc::AttachmentType attachment_type) {
-
-      if(attachment_type == rpc::AttachmentType::SpringArm) {
-        const auto a = transform.location.MakeSafeUnitVector(std::numeric_limits<float>::epsilon());
-        const auto z = geom::Vector3D(0.0f, 0.f, 1.0f);
-        constexpr float OneEps = 1.0f - std::numeric_limits<float>::epsilon();
-        if (geom::Math::Dot(a, z) > OneEps) {
-          std::cout << "WARNING: Transformations with translation only in the 'z' axis are ill-formed when \
-            using SprintArm attachment. Please, be careful with that." << std::endl;
-        }
-      }
-
     return _pimpl->CallAndWait<rpc::Actor>("spawn_actor_with_parent",
         description,
         transform,
@@ -274,10 +263,6 @@ namespace detail {
 
   void Client::AddActorImpulse(rpc::ActorId actor, const geom::Vector3D &vector) {
     _pimpl->AsyncCall("add_actor_impulse", actor, vector);
-  }
-
-  void Client::AddActorAngularImpulse(rpc::ActorId actor, const geom::Vector3D &vector) {
-    _pimpl->AsyncCall("add_actor_angular_impulse", actor, vector);
   }
 
   void Client::SetActorSimulatePhysics(rpc::ActorId actor, const bool enabled) {
@@ -322,25 +307,13 @@ namespace detail {
     _pimpl->AsyncCall("freeze_traffic_light", traffic_light, freeze);
   }
 
-  void Client::ResetTrafficLightGroup(rpc::ActorId traffic_light) {
-    _pimpl->AsyncCall("reset_traffic_light_group", traffic_light);
-  }
-
-  void Client::FreezeAllTrafficLights(bool frozen) {
-    _pimpl->AsyncCall("freeze_all_traffic_lights", frozen);
-  }
-
-  rpc::VehicleLightStateList Client::GetVehiclesLightStates() {
-    return _pimpl->CallAndWait<std::vector<std::pair<carla::ActorId, uint32_t>>>("get_vehicle_light_states");
-  }
-
-  std::vector<ActorId> Client::GetGroupTrafficLights(rpc::ActorId traffic_light) {
+  std::vector<ActorId> Client::GetGroupTrafficLights(const rpc::ActorId &traffic_light) {
     using return_t = std::vector<ActorId>;
     return _pimpl->CallAndWait<return_t>("get_group_traffic_lights", traffic_light);
   }
 
-  std::string Client::StartRecorder(std::string name, bool additional_data) {
-    return _pimpl->CallAndWait<std::string>("start_recorder", name, additional_data);
+  std::string Client::StartRecorder(std::string name) {
+    return _pimpl->CallAndWait<std::string>("start_recorder", name);
   }
 
   void Client::StopRecorder() {
@@ -361,10 +334,6 @@ namespace detail {
 
   std::string Client::ReplayFile(std::string name, double start, double duration, uint32_t follow_id) {
     return _pimpl->CallAndWait<std::string>("replay_file", name, start, duration, follow_id);
-  }
-
-  void Client::StopReplayer(bool keep_actors) {
-    _pimpl->AsyncCall("stop_replayer", keep_actors);
   }
 
   void Client::SetReplayerTimeFactor(double time_factor) {
@@ -402,20 +371,6 @@ namespace detail {
 
   uint64_t Client::SendTickCue() {
     return _pimpl->CallAndWait<uint64_t>("tick_cue");
-  }
-
-  std::vector<rpc::LightState> Client::QueryLightsStateToServer() const {
-    using return_t = std::vector<rpc::LightState>;
-    return _pimpl->CallAndWait<return_t>("query_lights_state", _pimpl->endpoint);
-  }
-
-  void Client::UpdateServerLightsState(std::vector<rpc::LightState>& lights, bool discard_client) const {
-    _pimpl->AsyncCall("update_lights_state", _pimpl->endpoint, std::move(lights), discard_client);
-  }
-
-  std::vector<geom::BoundingBox> Client::GetLevelBBs() const {
-    using return_t = std::vector<geom::BoundingBox>;
-    return _pimpl->CallAndWait<return_t>("get_all_level_BBs");
   }
 
 } // namespace detail

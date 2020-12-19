@@ -50,10 +50,10 @@ ue4-docker setup
 ## Building the Docker images
 
 Navigate to `carla/Util/Docker` and use the following commands, each one will take a long time.  
-First, let's create a Docker image containing a compiled version of Unreal Engine 4 version `24.3`. Change the version if needed.
+First, let's create a Docker image containing a compiled version of Unreal Engine 4 version `22.2`. Change the version if needed.
 
 ```
-ue4-docker build 4.24.3 --no-engine --no-minimal
+ue4-docker build 4.22.2 --no-engine --no-minimal
 ```
 
 Next, this will build the image with all the necessary requisites to build Carla in a **Ubuntu 18.04**
@@ -66,17 +66,6 @@ Finally create the actual Carla image, it will search for `carla-prerequisites:l
 
 ```
 docker build -t carla -f Carla.Dockerfile .
-```
-
-Other examples:
-
-```
-docker build \
-    --build-arg "HTTP_PROXY=socks5://127.0.0.1:1080/" \
-    --build-arg "HTTPS_PROXY=socks5://127.0.0.1:1080/" \
-    --network host \
-    -t carla -f Carla.Dockerfile .
-docker build --network host -t carla -f Carla.Dockerfile .
 ```
 
 ---
@@ -113,9 +102,3 @@ Or you can use it to cook assets (like new maps and meshes), ready to be consume
 ```
 
 The needed files and hierarchy to import assets is explained [here](https://carla.readthedocs.io/en/latest/export_import_dist/).
-
-Other examples:
-
-```
-./docker_tools.py --input /home/ff/Documents/test_roadrunner/Exports/ --output /home/ff/Documents/output --packages intersection_learning
-```

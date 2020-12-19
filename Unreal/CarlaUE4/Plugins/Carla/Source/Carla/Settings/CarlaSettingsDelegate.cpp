@@ -48,8 +48,7 @@ void UCarlaSettingsDelegate::OnActorSpawned(AActor *InActor)
       !InActor->ActorHasTag(UCarlaSettings::CARLA_ROAD_TAG) &&
       !InActor->ActorHasTag(UCarlaSettings::CARLA_SKY_TAG))
   {
-    TArray<UPrimitiveComponent *> components;
-    InActor->GetComponents(components);
+    TArray<UActorComponent *> components = InActor->GetComponentsByClass(UPrimitiveComponent::StaticClass());
     switch (CarlaSettings->GetQualityLevel())
     {
       case EQualityLevel::Low: {
@@ -246,8 +245,7 @@ void UCarlaSettingsDelegate::SetAllRoads(
       {
         continue;
       }
-      TArray<UStaticMeshComponent *> components;
-      actor->GetComponents(components);
+      TArray<UActorComponent *> components = actor->GetComponentsByClass(UStaticMeshComponent::StaticClass());
       for (int32 j = 0; j < components.Num(); j++)
       {
         UStaticMeshComponent *staticmeshcomponent = Cast<UStaticMeshComponent>(components[j]);
@@ -294,8 +292,7 @@ void UCarlaSettingsDelegate::SetActorComponentsDrawDistance(
   {
     return;
   }
-  TArray<UPrimitiveComponent *> components;
-  actor->GetComponents(components, false);
+  TArray<UActorComponent *> components = actor->GetComponentsByClass(UPrimitiveComponent::StaticClass());
   float dist = max_draw_distance;
   const float maxscale = actor->GetActorScale().GetMax();
   if (maxscale > CARLA_SETTINGS_MAX_SCALE_SIZE)

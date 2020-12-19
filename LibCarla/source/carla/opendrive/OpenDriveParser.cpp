@@ -7,7 +7,6 @@
 #include "carla/opendrive/OpenDriveParser.h"
 
 #include "carla/Logging.h"
-#include "carla/opendrive/parser/ControllerParser.h"
 #include "carla/opendrive/parser/GeoReferenceParser.h"
 #include "carla/opendrive/parser/GeometryParser.h"
 #include "carla/opendrive/parser/JunctionParser.h"
@@ -29,7 +28,7 @@ namespace opendrive {
     pugi::xml_parse_result parse_result = xml.load_string(opendrive.c_str());
 
     if (parse_result == false) {
-      log_error("unable to parse the OpenDRIVE XML string");
+      log_error("unable to parse the XML string");
       return {};
     }
 
@@ -44,7 +43,6 @@ namespace opendrive {
     parser::TrafficGroupParser::Parse(xml, map_builder);
     parser::SignalParser::Parse(xml, map_builder);
     parser::ObjectParser::Parse(xml, map_builder);
-    parser::ControllerParser::Parse(xml, map_builder);
 
     return map_builder.Build();
   }

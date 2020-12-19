@@ -18,8 +18,49 @@
 namespace carla {
 namespace client {
 
+  /// Using OpenDRIVE 1.5M (6.10 Country Codes)
+  ///
+  class LandmarkType {
+  public:
+    static const std::string Danger();     // = "101" // danger types from 101 to 151
+    static const std::string LanesMerging(); // = "121";
+    static const std::string CautionPedestrian(); // = "133";
+    static const std::string CautionBicycle(); // = "138";
+    static const std::string LevelCrossing(); // = "150";
+    static const std::string YieldSign(); // = "205";
+    static const std::string StopSign(); // = "206";
+    static const std::string MandatoryTurnDirection(); // = "209" // Left, right or forward
+    static const std::string MandatoryLeftRightDirection(); // = "211";
+    static const std::string TwoChoiceTurnDirection(); // = "214" // Forward-left, forward-right, left-right
+    static const std::string Roundabout(); // = "215";
+    static const std::string PassRightLeft(); // = "222";
+    static const std::string AccessForbidden(); // = "250";
+    static const std::string AccessForbiddenMotorvehicles(); // = "251";
+    static const std::string AccessForbiddenTrucks(); // = "253";
+    static const std::string AccessForbiddenBicycle(); // = "254";
+    static const std::string AccessForbiddenWeight(); // = "263";
+    static const std::string AccessForbiddenWidth(); // = "264";
+    static const std::string AccessForbiddenHeight(); // = "265";
+    static const std::string AccessForbiddenWrongDirection(); // = "267";
+    static const std::string ForbiddenUTurn(); // = "272";
+    static const std::string MaximumSpeed(); // = "274";
+    static const std::string ForbiddenOvertakingMotorvehicles(); // = "276";
+    static const std::string ForbiddenOvertakingTrucks(); // = "277";
+    static const std::string AbsoluteNoStop(); // = "283";
+    static const std::string RestrictedStop(); // = "286";
+    static const std::string HasWayNextIntersection(); // = "301";
+    static const std::string PriorityWay(); // = "306";
+    static const std::string PriorityWayEnd(); // = "307";
+    static const std::string CityBegin(); // = "310";
+    static const std::string CityEnd(); // = "311";
+    static const std::string Highway(); // = "330";
+    static const std::string DeadEnd(); // = "357";
+    static const std::string RecomendedSpeed(); // = "380";
+    static const std::string RecomendedSpeedEnd(); // = "381";
+  };
+
   /// Class containing a reference to RoadInfoSignal
-  class Landmark {
+  class Landmark : private MovableNonCopyable {
   public:
 
     SharedPtr<Waypoint> GetWaypoint() const {
@@ -31,7 +72,7 @@ namespace client {
     }
 
     road::RoadId GetRoadId() const {
-      return _signal->GetRoadId();
+      return _signal->GetSignal()->GetRoadId();
     }
 
     double GetDistance() const {
@@ -117,22 +158,16 @@ namespace client {
   private:
 
     friend Waypoint;
-    friend Map;
 
     Landmark(
         SharedPtr<Waypoint> waypoint,
-        SharedPtr<const Map> parent,
         const road::element::RoadInfoSignal* signal,
         double distance_from_search = 0)
       : _waypoint(waypoint),
-        _parent(parent),
         _signal(signal),
         _distance_from_search(distance_from_search) {}
 
-    /// waypoint where the signal is affecting
-    SharedPtr<Waypoint> _waypoint;
-
-    SharedPtr<const Map> _parent;
+    SharedPtr<Waypoint> _waypoint; /// waypoint where the signal is affecting
 
     const road::element::RoadInfoSignal* _signal;
 

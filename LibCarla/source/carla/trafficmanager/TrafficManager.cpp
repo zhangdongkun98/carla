@@ -4,24 +4,18 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-//#include "carla/client/Client.h"
-
-
-#include "carla/Sockets.h"
-#include "carla/client/detail/Simulator.h"
-
+#include "carla/client/Client.h"
+#include "carla/client/World.h"
 #include "carla/trafficmanager/TrafficManager.h"
 #include "carla/trafficmanager/TrafficManagerBase.h"
-#include "carla/trafficmanager/TrafficManagerLocal.h"
-#include "carla/trafficmanager/TrafficManagerRemote.h"
+#include "carla/Exception.h"
 
 #define DEBUG_PRINT_TM  0
-#define IP_DATA_BUFFER_SIZE     80
 
 namespace carla {
 namespace traffic_manager {
 
-std::map<uint16_t, TrafficManagerBase*> TrafficManager::_tm_map;
+std::map<uint16_t, std::unique_ptr<TrafficManagerBase>> TrafficManager::_tm_map;
 std::mutex TrafficManager::_mutex;
 
 TrafficManager::TrafficManager(
@@ -42,7 +36,7 @@ void TrafficManager::Release() {
   std::lock_guard<std::mutex> lock(_mutex);
   for(auto& tm : _tm_map) {
     tm.second->Release();
-    TrafficManagerBase *base_ptr = tm.second;
+    TrafficManagerBase *base_ptr = tm.second.release();
     delete base_ptr;
   }
   _tm_map.clear();
@@ -70,7 +64,7 @@ void TrafficManager::CreateTrafficManagerServer(
   auto GetLocalIP = [=](const uint16_t sport)-> std::pair<std::string, uint16_t> {
     std::pair<std::string, uint16_t> localIP;
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if(sock == SOCK_INVALID_INDEX) {
+    if(sock == INVALID_INDEX) {
       #if DEBUG_PRINT_TM
       std::cout << "Error number 1: " << errno << std::endl;
       std::cout << "Error message: " << strerror(errno) << std::endl;
@@ -83,7 +77,7 @@ void TrafficManager::CreateTrafficManagerServer(
       loopback.sin_addr.s_addr = INADDR_LOOPBACK;
       loopback.sin_port = htons(9);
       err = connect(sock, reinterpret_cast<sockaddr*>(&loopback), sizeof(loopback));
-      if(err == SOCK_INVALID_INDEX) {
+      if(err == INVALID_INDEX) {
         #if DEBUG_PRINT_TM
         std::cout << "Error number 2: " << errno << std::endl;
         std::cout << "Error message: " << strerror(errno) << std::endl;
@@ -91,7 +85,7 @@ void TrafficManager::CreateTrafficManagerServer(
       } else {
         socklen_t addrlen = sizeof(loopback);
         err = getsockname(sock, reinterpret_cast<struct sockaddr*> (&loopback), &addrlen);
-        if(err == SOCK_INVALID_INDEX) {
+        if(err == INVALID_INDEX) {
           #if DEBUG_PRINT_TM
           std::cout << "Error number 3: " << errno << std::endl;
           std::cout << "Error message: " << strerror(errno) << std::endl;
@@ -119,8 +113,8 @@ void TrafficManager::CreateTrafficManagerServer(
   };
 
   /// Define local constants
-  const std::vector<float> longitudinal_param = {2.0f, 0.01f, 0.4f};
-  const std::vector<float> longitudinal_highway_param = {4.0f, 0.02f, 0.2f};
+  const std::vector<float> longitudinal_param = {2.0f, 0.05f, 0.07f};
+  const std::vector<float> longitudinal_highway_param = {4.0f, 0.02f, 0.03f};
   const std::vector<float> lateral_param = {9.0f, 0.02f, 1.0f};
   const std::vector<float> lateral_highway_param = {7.0f, 0.02f, 1.0f};
   const float perc_difference_from_limit = 30.0f;
@@ -152,7 +146,7 @@ void TrafficManager::CreateTrafficManagerServer(
   #endif
 
   /// Set the pointer of the instance
-  _tm_map.insert(std::make_pair(port, tm_ptr));
+  _tm_map.insert(std::make_pair(port, std::unique_ptr<TrafficManagerBase>(tm_ptr)));
 
 }
 
@@ -189,7 +183,7 @@ bool TrafficManager::CreateTrafficManagerClient(
         tm_ptr->HealthCheckRemoteTM();
 
         /// Set the pointer of the instance
-        _tm_map.insert(std::make_pair(port, tm_ptr));
+        _tm_map.insert(std::make_pair(port, std::unique_ptr<TrafficManagerBase>(tm_ptr)));
 
         result = true;
       }

@@ -7,10 +7,12 @@
 #pragma once
 
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <vector>
 
 #include "carla/client/Actor.h"
+#include "carla/client/detail/Simulator.h"
 #include "carla/client/detail/EpisodeProxy.h"
 #include "carla/trafficmanager/TrafficManagerBase.h"
 #include "carla/trafficmanager/TrafficManagerClient.h"
@@ -19,6 +21,8 @@ namespace carla {
 namespace traffic_manager {
 
 using ActorPtr = carla::SharedPtr<carla::client::Actor>;
+using TLS = carla::rpc::TrafficLightState;
+using TLGroup = std::vector<carla::SharedPtr<carla::client::TrafficLight>>;
 
 /// The function of this class is to integrate all the various stages of
 /// the traffic manager appropriately using messengers.
@@ -95,15 +99,6 @@ public:
 
   /// Method to set probabilistic preference to keep on the right lane.
   void SetKeepRightPercentage(const ActorPtr &actor, const float percentage);
-
-  /// Method to set hybrid physics mode.
-  void SetHybridPhysicsMode(const bool mode_switch);
-
-  /// Method to set hybrid physics radius.
-  void SetHybridPhysicsRadius(const float radius);
-
-  /// Method to set Open Street Map mode.
-  void SetOSMMode(const bool mode_switch);
 
   /// Method to provide synchronous tick
   bool SynchronousTick();

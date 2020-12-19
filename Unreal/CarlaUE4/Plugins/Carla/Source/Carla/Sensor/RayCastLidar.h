@@ -6,57 +6,54 @@
 
 #pragma once
 
+#include "Carla/Sensor/Sensor.h"
 
 #include "Carla/Actor/ActorDefinition.h"
 #include "Carla/Sensor/LidarDescription.h"
-#include "Carla/Sensor/Sensor.h"
-#include "Carla/Sensor/RayCastSemanticLidar.h"
-#include "Carla/Actor/ActorBlueprintFunctionLibrary.h"
 
 #include <compiler/disable-ue4-macros.h>
-#include <carla/sensor/data/LidarData.h>
+#include <carla/sensor/s11n/LidarMeasurement.h>
 #include <compiler/enable-ue4-macros.h>
 
 #include "RayCastLidar.generated.h"
 
 /// A ray-cast based Lidar sensor.
 UCLASS()
-class CARLA_API ARayCastLidar : public ARayCastSemanticLidar
+class CARLA_API ARayCastLidar : public ASensor
 {
   GENERATED_BODY()
 
-  using FLidarData = carla::sensor::data::LidarData;
-  using FDetection = carla::sensor::data::LidarDetection;
+  using FLidarMeasurement = carla::sensor::s11n::LidarMeasurement;
 
 public:
+
   static FActorDefinition GetSensorDefinition();
 
   ARayCastLidar(const FObjectInitializer &ObjectInitializer);
-  virtual void Set(const FActorDescription &Description) override;
-  virtual void Set(const FLidarDescription &LidarDescription) override;
 
-private:
-  /// Compute the received intensity of the point
-  float ComputeIntensity(const FSemanticDetection& RawDetection) const;
-  FDetection ComputeDetection(const FHitResult& HitInfo, const FTransform& SensorTransf) const;
+  void Set(const FActorDescription &Description) override;
 
-  bool PreprocessRay() const override;
-  bool PostprocessDetection(FDetection& Detection) const;
+  void Set(const FLidarDescription &LidarDescription);
 
-  void ComputeAndSaveDetections(const FTransform& SensorTransform) override;
+protected:
 
   virtual void Tick(float DeltaTime) override;
 
-  FLidarData LidarData;
+private:
 
-  /// Enable/Disable general dropoff of lidar points
-  bool DropOffGenActive;
+  /// Creates a Laser for each channel.
+  void CreateLasers();
 
-  /// Slope for the intensity dropoff of lidar points, it is calculated
-  /// throught the dropoff limit and the dropoff at zero intensity
-  /// The points is kept with a probality alpha*Intensity + beta where
-  /// alpha = (1 - dropoff_zero_intensity) / droppoff_limit
-  /// beta = (1 - dropoff_zero_intensity)
-  float DropOffAlpha;
-  float DropOffBeta;
+  /// Updates LidarMeasurement with the points read in DeltaTime.
+  void ReadPoints(float DeltaTime);
+
+  /// Shoot a laser ray-trace, return whether the laser hit something.
+  bool ShootLaser(uint32 Channel, float HorizontalAngle, FVector &Point) const;
+
+  UPROPERTY(EditAnywhere)
+  FLidarDescription Description;
+
+  TArray<float> LaserAngles;
+
+  FLidarMeasurement LidarMeasurement;
 };

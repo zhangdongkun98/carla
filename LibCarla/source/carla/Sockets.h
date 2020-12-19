@@ -15,5 +15,3 @@
   #include <arpa/inet.h>  ///< getsockname
   #include <unistd.h>     ///< close
 #endif
-
-#define SOCK_INVALID_INDEX  -1

@@ -9,8 +9,6 @@
 #include <carla/streaming/Client.h>
 #include <carla/streaming/Server.h>
 
-#include <boost/asio/post.hpp>
-
 #include <algorithm>
 
 using namespace carla::streaming;
@@ -40,7 +38,7 @@ public:
     _client.Subscribe(stream.token(), [this](carla::Buffer DEBUG_ONLY(msg)) {
       DEBUG_ASSERT_EQ(msg.size(), _message.size());
       DEBUG_ASSERT(msg == _message);
-      boost::asio::post(_client_callback, [this]() {
+      _client_callback.post([this]() {
         CARLA_PROFILE_FPS(client, listen_callback);
         ++_number_of_messages_received;
       });

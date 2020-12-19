@@ -45,10 +45,6 @@ struct LockTexture
 
 #if CARLA_WITH_VULKAN_SUPPORT == 1
 
-// Temporal; this avoid allocating the array each time and also avoids checking
-// for a bigger texture, ReadSurfaceData will allocate the space needed.
-TArray<FColor> gPixels;
-
 static void WritePixelsToBuffer_Vulkan(
     const UTextureRenderTarget2D &RenderTarget,
     carla::Buffer &Buffer,
@@ -58,23 +54,22 @@ static void WritePixelsToBuffer_Vulkan(
   check(IsInRenderingThread());
   auto RenderResource =
       static_cast<const FTextureRenderTarget2DResource *>(RenderTarget.Resource);
-  FTexture2DRHIRef Texture = RenderResource->GetRenderTargetTexture();
+  FTextureRHIParamRef Texture = RenderResource->GetRenderTargetTexture();
   if (!Texture)
   {
     UE_LOG(LogCarla, Error, TEXT("FPixelReader: UTextureRenderTarget2D missing render target texture"));
     return;
   }
 
-  FIntPoint Rect = RenderResource->GetSizeXY();
-
   // NS: Extra copy here, don't know how to avoid it.
+  TArray<FColor> Pixels;
   InRHICmdList.ReadSurfaceData(
       Texture,
-      FIntRect(0, 0, Rect.X, Rect.Y),
-      gPixels,
+      FIntRect(0, 0, RenderResource->GetSizeXY().X, RenderResource->GetSizeXY().Y),
+      Pixels,
       FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX));
 
-  Buffer.copy_from(Offset, gPixels);
+  Buffer.copy_from(Offset, Pixels);
 }
 
 #endif // CARLA_WITH_VULKAN_SUPPORT
@@ -155,12 +150,7 @@ void FPixelReader::WritePixelsToBuffer(
   }
 #endif // CARLA_WITH_VULKAN_SUPPORT
 
-  FTextureRenderTargetResource* RenderTargetResource = RenderTarget.GetRenderTargetResource();
-  if(!RenderTargetResource)
-  {
-    return;
-  }
-  FRHITexture2D *Texture = RenderTargetResource->GetRenderTargetTexture();
+  FRHITexture2D *Texture = RenderTarget.GetRenderTargetResource()->GetRenderTargetTexture();
   checkf(Texture != nullptr, TEXT("FPixelReader: UTextureRenderTarget2D missing render target texture"));
 
   const uint32 BytesPerPixel = 4u; // PF_R8G8B8A8
@@ -191,9 +181,6 @@ void FPixelReader::WritePixelsToBuffer(
   {
     check(ExpectedStride == SrcStride);
     const uint8 *Source = Lock.Source;
-    if(Source)
-    {
-      Buffer.copy_from(Offset, Source, ExpectedStride * Height);
-    }
+    Buffer.copy_from(Offset, Source, ExpectedStride * Height);
   }
 }

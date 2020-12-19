@@ -7,7 +7,6 @@
 #pragma once
 
 #include "carla/client/Actor.h"
-#include "carla/road/RoadTypes.h"
 
 namespace carla {
 namespace client {
@@ -20,9 +19,6 @@ namespace client {
     const geom::BoundingBox &GetTriggerVolume() const {
       return ActorState::GetBoundingBox();
     }
-
-    carla::road::SignId GetSignId() const;
-
   };
 
 } // namespace client

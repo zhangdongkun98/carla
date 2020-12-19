@@ -26,7 +26,5 @@ namespace road {
 
   using ConId = uint32_t;
 
-  using ContId = std::string;
-
 } // road
 } // carla

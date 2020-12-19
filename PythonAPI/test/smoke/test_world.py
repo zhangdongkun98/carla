@@ -10,7 +10,6 @@ from . import SmokeTest
 
 class TestWorld(SmokeTest):
     def test_fixed_delta_seconds(self):
-        print("TestWorld.test_fixed_delta_seconds")
         world = self.client.get_world()
         settings = world.get_settings()
         self.assertFalse(settings.synchronous_mode)

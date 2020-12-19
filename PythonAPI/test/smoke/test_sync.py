@@ -7,7 +7,6 @@
 from . import SyncSmokeTest
 
 import carla
-import time
 
 try:
     import queue
@@ -17,7 +16,6 @@ except ImportError:
 
 class TestSynchronousMode(SyncSmokeTest):
     def test_reloading_map(self):
-        print("TestSynchronousMode.test_reloading_map")
         settings = carla.WorldSettings(
             no_rendering_mode=False,
             synchronous_mode=True,
@@ -27,8 +25,6 @@ class TestSynchronousMode(SyncSmokeTest):
             self.world.apply_settings(settings)
 
     def test_camera_on_synchronous_mode(self):
-        print("TestSynchronousMode.test_camera_on_synchronous_mode")
-
         cam_bp = self.world.get_blueprint_library().find('sensor.camera.rgb')
         t = carla.Transform(carla.Location(z=10))
         camera = self.world.spawn_actor(cam_bp, t)

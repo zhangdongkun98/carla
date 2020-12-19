@@ -16,8 +16,7 @@ namespace detail {
           state.GetFrame(),
           state.GetGameTimeStamp(),
           state.GetDeltaSeconds(),
-          state.GetPlatformTimeStamp()),
-      _simulation_state(state.GetSimulationState()) {
+          state.GetPlatformTimeStamp()) {
     _actors.reserve(state.size());
     for (auto &&actor : state) {
       DEBUG_ONLY(auto result = )

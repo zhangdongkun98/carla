@@ -10,7 +10,7 @@
 #include "carla/client/detail/WalkerNavigation.h"
 #include "carla/geom/Vector3D.h"
 
-#include <boost/optional.hpp>
+#include <optional>
 
 namespace carla {
 namespace client {

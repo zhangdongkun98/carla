@@ -9,7 +9,7 @@ source $(dirname "$0")/Environment.sh
 DOC_STRING="Run unit tests."
 
 USAGE_STRING=$(cat <<- END
-Usage: $0 [-h|--help] [--gdb] [--xml] [--gtest_args=ARGS] [--python-version=VERSION]
+Usage: $0 [-h|--help] [--gdb] [--xml] [--gtest_args=ARGS]
 
 Then either ran all the tests
 
@@ -18,6 +18,7 @@ Then either ran all the tests
 Or choose one or more of the following
 
     [--libcarla-release] [--libcarla-debug]
+    [--python-api-2] [--python-api-3]
     [--benchmark]
 
 You can also set the command-line arguments passed to GTest on a ".gtest"
@@ -34,19 +35,19 @@ XML_OUTPUT=false
 GTEST_ARGS=`sed -e 's/#.*$//g' ${CARLA_ROOT_FOLDER}/.gtest | sed -e '/^[[:space:]]*$/!s/^/--/g' | sed -e ':a;N;$!ba;s/\n/ /g'`
 LIBCARLA_RELEASE=false
 LIBCARLA_DEBUG=false
-SMOKE_TESTS=false
-PYTHON_API=false
+PYTHON_API_2=false
+PYTHON_API_3=false
+SMOKE_TESTS_2=false
+SMOKE_TESTS_3=false
 RUN_BENCHMARK=false
 
-OPTS=`getopt -o h --long help,gdb,xml,gtest_args:,all,libcarla-release,libcarla-debug,python-api,smoke,benchmark,python-version:, -n 'parse-options' -- "$@"`
+OPTS=`getopt -o h --long help,gdb,xml,gtest_args:,all,libcarla-release,libcarla-debug,python-api-2,python-api-3,smoke-2,smoke-3,benchmark -n 'parse-options' -- "$@"`
 
 if [ $? != 0 ] ; then echo "$USAGE_STRING" ; exit 2 ; fi
 
 eval set -- "$OPTS"
 
-PY_VERSION=3
-
-while [[ $# -gt 0 ]]; do
+while true; do
   case "$1" in
     --gdb )
       GDB="gdb --args";
@@ -62,7 +63,8 @@ while [[ $# -gt 0 ]]; do
     --all )
       LIBCARLA_RELEASE=true;
       LIBCARLA_DEBUG=true;
-      PYTHON_API=true;
+      PYTHON_API_2=true;
+      PYTHON_API_3=true;
       shift ;;
     --libcarla-release )
       LIBCARLA_RELEASE=true;
@@ -70,31 +72,34 @@ while [[ $# -gt 0 ]]; do
     --libcarla-debug )
       LIBCARLA_DEBUG=true;
       shift ;;
-    --smoke )
-      SMOKE_TESTS=true;
+    --python-api-2 )
+      PYTHON_API_2=true;
       shift ;;
-    --python-api )
-      PYTHON_API=true;
+    --python-api-3 )
+      PYTHON_API_3=true;
+      shift ;;
+    --smoke-2 )
+      SMOKE_TESTS_2=true;
+      shift ;;
+    --smoke-3 )
+      SMOKE_TESTS_3=true;
       shift ;;
     --benchmark )
       LIBCARLA_RELEASE=true;
       RUN_BENCHMARK=true;
       GTEST_ARGS="--gtest_filter=benchmark*";
       shift ;;
-    --python-version )
-      PY_VERSION="$2"
-      shift 2 ;;
     -h | --help )
       echo "$DOC_STRING"
       echo -e "$USAGE_STRING"
       exit 1
       ;;
     * )
-      shift ;;
+      break ;;
   esac
 done
 
-if ! { ${LIBCARLA_RELEASE} || ${LIBCARLA_DEBUG} || ${PYTHON_API} || ${SMOKE_TESTS}; }; then
+if ! { ${LIBCARLA_RELEASE} || ${LIBCARLA_DEBUG} || ${PYTHON_API_2} || ${PYTHON_API_3} || ${SMOKE_TESTS_2} || ${SMOKE_TESTS_3}; }; then
   fatal_error "Nothing selected to be done."
 fi
 
@@ -176,11 +181,23 @@ else
   EXTRA_ARGS=
 fi
 
-if ${PYTHON_API} ; then
+if ${PYTHON_API_2} ; then
+
+  log "Running Python API for Python 2 unit tests."
+
+  /usr/bin/env python2 -m nose2 ${EXTRA_ARGS}
+
+  if ${XML_OUTPUT} ; then
+    mv test-results.xml ${CARLA_TEST_RESULTS_FOLDER}/python-api-2.xml
+  fi
+
+fi
+
+if ${PYTHON_API_3} ; then
 
   log "Running Python API for Python 3 unit tests."
 
-  /usr/bin/env python${PY_VERSION} -m nose2 ${EXTRA_ARGS}
+  /usr/bin/env python3 -m nose2 ${EXTRA_ARGS}
 
   if ${XML_OUTPUT} ; then
     mv test-results.xml ${CARLA_TEST_RESULTS_FOLDER}/python-api-3.xml
@@ -194,10 +211,10 @@ popd >/dev/null
 # -- Run smoke tests -----------------------------------------------------------
 # ==============================================================================
 
-if ${SMOKE_TESTS} ; then
+if ${SMOKE_TESTS_2} || ${SMOKE_TESTS_3} ; then
   pushd "${CARLA_PYTHONAPI_ROOT_FOLDER}/util" >/dev/null
     log "Checking connection with the simulator."
-    python${PY_VERSION} test_connection.py -p 3654 --timeout=60.0
+    ./test_connection.py -p 3654 --timeout=60.0
   popd >/dev/null
 fi
 
@@ -209,11 +226,23 @@ else
   EXTRA_ARGS=
 fi
 
-if ${SMOKE_TESTS} ; then
+if ${SMOKE_TESTS_2} ; then
+
+  log "Running smoke tests for Python 2."
+
+  /usr/bin/env python2 -m nose2 ${EXTRA_ARGS}
+
+  if ${XML_OUTPUT} ; then
+    mv test-results.xml ${CARLA_TEST_RESULTS_FOLDER}/smoke-tests-2.xml
+  fi
+
+fi
+
+if ${SMOKE_TESTS_3} ; then
 
   log "Running smoke tests for Python 3."
 
-  /usr/bin/env python${PY_VERSION} -m nose2 ${EXTRA_ARGS}
+  /usr/bin/env python3 -m nose2 ${EXTRA_ARGS}
 
   if ${XML_OUTPUT} ; then
     mv test-results.xml ${CARLA_TEST_RESULTS_FOLDER}/smoke-tests-3.xml

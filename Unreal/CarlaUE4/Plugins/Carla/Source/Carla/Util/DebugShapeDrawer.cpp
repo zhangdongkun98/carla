@@ -21,12 +21,10 @@ struct FShapeVisitor
 
   FShapeVisitor(UWorld &InWorld, FColor InColor, float InLifeTime, bool bInPersistentLines)
     : World(&InWorld),
-      Color(InColor.ReinterpretAsLinear() * BrightMultiplier),
+      Color(InColor),
       LifeTime(InLifeTime),
       bPersistentLines(bInPersistentLines)
-  {
-    World->PersistentLineBatcher->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-  }
+  {}
 
   void operator()(const Shape::Point &Point) const
   {
@@ -167,22 +165,20 @@ struct FShapeVisitor
       return;
     }
     ACarlaHUD *Hud = Cast<ACarlaHUD>(PlayerController->GetHUD());
-    Hud->AddHUDString(carla::rpc::ToFString(Str.text), Str.location, Color.Quantize(), LifeTime);
+    Hud->AddHUDString(carla::rpc::ToFString(Str.text), Str.location, Color, LifeTime);
   }
 
 private:
 
   UWorld *World;
 
-  FLinearColor Color;
+  FColor Color;
 
   float LifeTime;
 
   bool bPersistentLines;
 
   uint8 DepthPriority = SDPG_World;
-
-  static constexpr double BrightMultiplier = 10000.0;
 };
 
 void FDebugShapeDrawer::Draw(const carla::rpc::DebugShape &Shape)
