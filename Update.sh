@@ -52,22 +52,11 @@ CONTENT_LINK=http://carla-assets.s3.amazonaws.com/${CONTENT_ID}.tar.gz
 VERSION_FILE=${CONTENT_FOLDER}/.version
 
 function download_content {
-  if [[ -d "$CONTENT_FOLDER" ]]; then
-    echo "Backing up existing Content..."
-    mv -v "$CONTENT_FOLDER" "${CONTENT_FOLDER}_$(date +%Y%m%d%H%M%S)"
-  fi
-  mkdir -p $CONTENT_FOLDER
+  cp ~/save/Content.tar.gz .
   mkdir -p Content
-  if hash aria2c 2>/dev/null; then
-    echo -e "${CONTENT_LINK}\n\tout=Content.tar.gz" > .aria2c.input
-    aria2c -j16 -x16 --input-file=.aria2c.input
-    rm -f .aria2c.input
-  else
-    wget -c ${CONTENT_LINK} -O Content.tar.gz
-  fi
   tar -xvzf Content.tar.gz -C Content
-  rm Content.tar.gz
-  mv Content/* $CONTENT_FOLDER
+  mkdir -p "$CONTENT_FOLDER"
+  mv Content/* "$CONTENT_FOLDER"
   rm -rf Content
   echo "$CONTENT_ID" > "$VERSION_FILE"
   echo "Content updated successfully."
