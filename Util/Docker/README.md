@@ -66,6 +66,7 @@ Finally create the actual Carla image, it will search for `carla-prerequisites:l
 
 ```
 docker build --network host -t carla:0.9.8 -f Carla.Dockerfile .
+docker run -it --network host -m 12g carla:0.9.8 /bin/bash
 ```
 
 ---

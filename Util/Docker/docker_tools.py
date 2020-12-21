@@ -83,7 +83,7 @@ def parse_args():
 def main():
 
     args = parse_args()
-    carla_image_name = "carla:latest"
+    carla_image_name = "carla:0.9.8"
     inbox_assets_path = '/home/ue4/carla/Import'
     client = docker.from_env()
 
@@ -113,12 +113,12 @@ def main():
             # If there is packages, import them first and package them
             docker_utils.exec_command(
                 carla_container,
-                'make import',
+                'make import ARGS="--package=map_package"',
                 user='ue4', verbose=args.verbose, ignore_error=False)
 
             docker_utils.exec_command(
                 carla_container,
-                'make package ARGS="--packages=' + str(args.packages) + '"',
+                'make package ARGS="--package=map_package"',
                 user='ue4', verbose=args.verbose, ignore_error=False)
         else:
             # Just create a package of the whole project
